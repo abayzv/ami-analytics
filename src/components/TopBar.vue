@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import Card from './Card.vue';
+
 const props = defineProps({
     title: String,
     column: Array,
@@ -30,39 +30,29 @@ const sortDatas = computed(() => {
 </script>
 
 <template>
-    <Card class="w-full">
-        <div class="flex items-end justify-between mb-2">
-            <h1 class="text-lg font-semibold text-gray-800">{{ title }}</h1>
-            <div class="text-red-400">
-                All
-            </div>
+    <div class="flex w-full gap-5 text-sm text-neutral-600">
+        <div v-for="(item, indexKey) in column" :key="indexKey" :class="{
+            'flex-1': indexKey === 0,
+            'text-end': indexKey !== 0,
+        }">
+            <div class="font-medium text-neutral-400 mb-2">{{ item }}</div>
+            <ul class="flex flex-col gap-2">
+                <li v-for="(data, index) in sortDatas" :key="index" class="py-2" :class="{
+                    'px-2 bg-neutral-100 rounded': indexKey === 0,
+                }" :style="{
+    width: indexKey === 0 ? `${getPercentage(data.visitors)}%` : 'auto'
+}">
+                    {{ data[item.toLowerCase()] }}
+                </li>
+            </ul>
         </div>
-        <div class="flex w-full gap-5 text-sm text-neutral-600">
-            <div v-for="(item, indexKey) in column" :key="indexKey" :class="{
-                'flex-1' : indexKey === 0,
-                'text-end' : indexKey !== 0,
-            }">
-                <div class="font-medium text-neutral-400 mb-2">{{ item }}</div>
-                <ul class="flex flex-col gap-2">
-                    <li v-for="(data, index) in sortDatas" :key="index" class="py-2" :class="{
-                        'px-2 bg-neutral-100 rounded' : indexKey === 0,
-                    }"
-                    :style="{
-                        width: indexKey === 0 ? `${getPercentage(data.visitors)}%` : 'auto'
-                    }"
-                    >
-                        {{ data[item.toLowerCase()] }}
-                    </li>
-                </ul>
-            </div>
-            <div v-if="percentage" class="text-end">
-                <div class="font-medium text-neutral-400 mb-2">%</div>
-                <ul class="flex flex-col gap-2">
-                    <li v-for="(data, index) in sortDatas" :key="index" class="py-2">
-                        {{ getPercentageFromTotal(data.visitors).toFixed(2) }}
-                    </li>
-                </ul>
-            </div>
+        <div v-if="percentage" class="text-end">
+            <div class="font-medium text-neutral-400 mb-2">%</div>
+            <ul class="flex flex-col gap-2">
+                <li v-for="(data, index) in sortDatas" :key="index" class="py-2">
+                    {{ getPercentageFromTotal(data.visitors).toFixed(2) }}
+                </li>
+            </ul>
         </div>
-    </Card>
+    </div>
 </template>

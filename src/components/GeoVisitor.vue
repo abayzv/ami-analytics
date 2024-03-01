@@ -25,7 +25,7 @@ onMounted(() => {
     initData();
 
     // const map set view to world
-    const map = L.map("map", {zoomControl: false}).setView([40, 0], 1);
+    const map = L.map("map", { zoomControl: false }).setView([40, 0], 1);
     // add tileLayer to map
     L.tileLayer(tileLayerUrl, {
         maxZoom: 18,
@@ -84,19 +84,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <Card>
-        <h1 class="text-lg font-semibold text-gray-800 mb-2">Location</h1>
-        <div style="height:500px; width: 550px;">
-            <div id="map" style="height: 100%; width: 100%"></div>
-        </div>
-    </Card>
+    <div style="height:500px; width: 550px;">
+        <div id="map" style="height: 100%; width: 100%"></div>
+    </div>
 </template>
 
 <style>
-
 .leaflet-container {
     background-color: transparent;
     outline: none;
 }
-
 </style>

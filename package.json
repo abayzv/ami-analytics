@@ -12,6 +12,7 @@
     "@formkit/auto-animate": "^0.8.1",
     "apexcharts": "^3.46.0",
     "vue": "^3.4.19",
+    "vue-router": "^4.3.0",
     "vue3-apexcharts": "^1.5.2"
   },
   "devDependencies": {
