@@ -16,10 +16,11 @@ const About = { template: '<div>About</div>' }
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        { path: '/', redirect: '/dashboard'},
+        { path: '/', redirect: '/dashboard/e49a81c9-f561-490a-9812-b007ecfcf3d2'},
         { path: '/dashboard', component: Dashboard},
+        { path: '/dashboard/:id', component: Dashboard},
         { path: '/home', component: Home },
-        { path: '/about', component: About },
+        { path: '/about', component: About }
     ],
 })
 

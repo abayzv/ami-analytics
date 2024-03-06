@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
 const props = defineProps({
     title: String,
@@ -7,6 +8,9 @@ const props = defineProps({
     data: Array,
     percentage: Boolean,
 })
+
+const  route = useRoute()
+const router = useRouter()
 
 const totalData = computed(() => {
     return props.data.reduce((acc, cur) => acc + cur[props.column[1].toLowerCase()], 0)
@@ -27,6 +31,10 @@ const getPercentageFromTotal = (value) => {
 const sortDatas = computed(() => {
     return props.data.sort((a, b) => b[props.column[1].toLowerCase()] - a[props.column[1].toLowerCase()])
 })
+
+const filterData = (data) => {
+    router.push({ query: { ...route.query, [props.column[0].toLowerCase()] : data } })
+}
 </script>
 
 <template>
@@ -37,11 +45,11 @@ const sortDatas = computed(() => {
         }">
             <div class="font-medium text-neutral-400 mb-2">{{ item }}</div>
             <ul class="flex flex-col gap-2">
-                <li v-for="(data, index) in sortDatas" :key="index" class="py-2" :class="{
+                <li v-for="(data, index) in sortDatas" :key="index" class="py-2 cursor-pointer" :class="{
                     'px-2 bg-neutral-100 rounded': indexKey === 0,
                 }" :style="{
     width: indexKey === 0 ? `${getPercentage(data.visitors)}%` : 'auto'
-}">
+}" @click="filterData(data[item.toLowerCase()])">
                     {{ data[item.toLowerCase()] }}
                 </li>
             </ul>
