@@ -213,6 +213,7 @@ const state = reactive({
   },
   metric: "unique_visitor",
   loading: true,
+  previousPeriod: []
 });
 
 const dataLocation = computed(() => {
@@ -271,8 +272,9 @@ const getData = async () => {
       return res;
     });
     
-    const { top_stats } = response.data.data;
+    const { top_stats, compare_from, compare_to } = response.data.data;
     state.topStats = top_stats;
+    state.previousPeriod = [compare_from, compare_to]
     setTimeout(() => {
       state.loading = false;
     }, 1000);
@@ -366,7 +368,7 @@ watch(
       <div class="flex gap-5">
         <Card class="flex-1">
           <template v-if="!state.loading">
-            <ChartInfo :stats="state.topStats" />
+            <ChartInfo :stats="state.topStats" :previous-period="state.previousPeriod"/>
             <apexchart
               height="450"
               type="area"

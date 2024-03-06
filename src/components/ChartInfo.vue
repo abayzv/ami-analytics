@@ -6,7 +6,8 @@ const router = useRouter();
 const route = useRoute();
 
 const props = defineProps({
-    stats: Object
+    stats: Object,
+    previousPeriod: Object
 })
 
 const snakeToTitle = (str) => {
@@ -24,7 +25,7 @@ const formatDate = (date) => {
 };
 
 const compareRangeDate = computed(() => {
-    return formatDate(route.query.compare_from) + " - " + formatDate(route.query.compare_to);
+    return formatDate(props.previousPeriod[0]) + " - " + formatDate(props.previousPeriod[1]);
 });
 
 const rangeDate = computed(() => {
@@ -45,7 +46,7 @@ const rangeDate = computed(() => {
             </div>
             <div class="flex justify-between">
                 <div class="font-bold text-xl">{{ props.stats[item].value }}</div>
-                <div v-if="!route.query.compare_from && !route.query.compare_to" class="flex items-center gap-1 text-sm" :class="{
+                <div v-if="!route.query.comparison" class="flex items-center gap-1 text-sm" :class="{
                     'text-green-500': props.stats[item].changePercent > 0,
                     'text-red-500': props.stats[item].changePercent < 0,
                 }">
@@ -54,12 +55,12 @@ const rangeDate = computed(() => {
                     <span class="text-neutral-600">{{ props.stats[item].changePercent }}%</span>
                 </div>
             </div>
-            <div v-if="route.query.compare_from && route.query.compare_to" class="text-sm">
+            <div v-if="route.query.comparison" class="text-sm">
                 {{ rangeDate }}
             </div>
         </div>
     </div>
-    <div v-if="route.query.compare_from && route.query.compare_to" class="flex gap-5 mb-5">
+    <div v-if="route.query.comparison" class="flex gap-5 mb-5">
         <div v-for="(item, index) in Object.keys(props.stats)" class="border-neutral-200 px-5" :class="{
             'border-r': index === 0,
             'border-l': index !== 0 && index !== 1,
@@ -70,7 +71,7 @@ const rangeDate = computed(() => {
             </div>
             <div class="flex justify-between text-neutral-300">
                 <div class="font-bold text-xl">{{ props.stats[item].previous }}</div>
-                <div v-if="!route.query.compare_from && !route.query.compare_to" class="flex items-center gap-1 text-sm" :class="{
+                <div v-if="!route.query.comparison" class="flex items-center gap-1 text-sm" :class="{
                     'text-green-500': props.stats[item].changePercent > 0,
                     'text-red-500': props.stats[item].changePercent < 0,
                 }">
