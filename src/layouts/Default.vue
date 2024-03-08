@@ -16,4 +16,10 @@ import Header from '../components/layouts/Header.vue'
     max-width: 1200px;
 }
 
+@media (max-width: 640px) {
+    .container {
+        padding: 0 20px;
+    }
+}
+
 </style>

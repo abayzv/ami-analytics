@@ -35,7 +35,7 @@ const rangeDate = computed(() => {
 </script>
 
 <template>
-    <div class="flex gap-5 mb-5">
+    <div class="lg:flex gap-5 mb-5 hidden">
         <div v-for="(item, index) in Object.keys(props.stats)" class="border-neutral-200 px-5" :class="{
             'border-r': index === 0,
             'border-l': index !== 0 && index !== 1,

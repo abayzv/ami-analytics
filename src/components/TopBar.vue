@@ -49,8 +49,9 @@ const filterData = (data) => {
                     'px-2 bg-neutral-100 rounded': indexKey === 0,
                 }" :style="{
     width: indexKey === 0 ? `${getPercentage(data.visitors)}%` : 'auto'
-}" @click="filterData(data[item.toLowerCase()])">
-                    {{ data[item.toLowerCase()] }}
+}" @click="filterData(data[item.toLowerCase()])"
+                :title="data[item.toLowerCase()]">
+                    <div class="lg:max-w-none max-w-52 truncate">{{ data[item.toLowerCase()] }}</div>
                 </li>
             </ul>
         </div>

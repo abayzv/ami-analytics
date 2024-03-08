@@ -120,44 +120,8 @@ const state = reactive({
       visitors: 100,
     },
     {
-      page: "/signup",
-      visitors: 50,
-    },
-    {
       page: "/terms",
       visitors: 200,
-    },
-  ],
-  deviceTabs: ["All"],
-  keyDevices: ["Devices", "Visitors"],
-  dataDevices: [
-    {
-      devices: "Chrome",
-      visitors: 1000,
-    },
-    {
-      devices: "Safari",
-      visitors: 300,
-    },
-    {
-      devices: "Firefox",
-      visitors: 500,
-    },
-    {
-      devices: "Edge",
-      visitors: 200,
-    },
-    {
-      devices: "Opera",
-      visitors: 100,
-    },
-    {
-      devices: "IE",
-      visitors: 50,
-    },
-    {
-      devices: "Other",
-      visitors: 300,
     },
   ],
   locationTabs: ["Map"],
@@ -166,6 +130,15 @@ const state = reactive({
     keyCountry: ["Country", "Visitors"],
     keyRegion: ["Region", "Visitors"],
     keyCity: ["City", "Visitors"],
+    data: []
+  },
+  device: {
+    keyBrowser: ["Browser", "Visitors"],
+    keyOS: ["OS", "Visitors"],
+    data: []
+  },
+  topPage: {
+    keyPage: ["Page", "Visitors"],
     data: []
   },
   dataParams: {
@@ -181,9 +154,13 @@ const state = reactive({
   },
   metric: "unique_visitor",
   locationMetric: "country",
+  deviceMetric: "browser",
+  topPageMetric: 'top-page',
   isLoading: {
     chart: true,
     location: true,
+    device: true,
+    topPage: true,
   },
   previousPeriod: []
 });
@@ -309,6 +286,66 @@ const getLocation = async () => {
   }
 }
 
+const getDevice = async () => {
+  state.isLoading.device = true;
+  const { compare_from, compare_to, comparison, ...query } = state.dataParams;
+  const params = {
+    ...query,
+    metric: state.deviceMetric,
+    limit: 10,
+    page: 1,
+  };
+  try {
+    const response = await api.post('/analytic-web/device', params).then((res) => {
+      return res;
+    });
+
+    const {data} = response.data
+    state.device.data = data.map((item) => {
+      return {
+        [state.deviceMetric]: item[state.deviceMetric || "browser"],
+        visitors: item.value,
+      };
+    });
+    setTimeout(() => {
+      state.isLoading.device = false;
+    }, 1000);
+  } catch (error) {
+    state.isLoading.device = false;
+    console.log(error);
+  }
+}
+
+const getTopPage = async () => {
+  state.isLoading.topPage = true;
+  const { compare_from, compare_to, comparison, ...query } = state.dataParams;
+  const params = {
+    ...query,
+    metric: state.topPageMetric,
+    limit: 10,
+    page: 1,
+  };
+  try {
+    const response = await api.post('/analytic-web/page', params).then((res) => {
+      return res;
+    });
+
+    const {data} = response.data
+    state.topPage.data = data.map((item) => {
+      return {
+        page: item[state.topPageMetric || "top-page"],
+        visitors: item.value,
+      };
+    });
+    setTimeout(() => {
+      state.isLoading.topPage = false;
+    }, 1000);
+  } catch (error) {
+    state.isLoading.topPage = false;
+    console.log(error);
+  }
+}
+
 const handleChangeLocationTab = (tab) => {
   switch (tab) {
     case "Countries":
@@ -326,6 +363,19 @@ const handleChangeLocationTab = (tab) => {
   }
 };  
 
+const handleChangeDeviceTab = (tab) => {
+  switch (tab) {
+    case "Browser":
+      state.deviceMetric = "browser";
+      getDevice();
+      break;
+    case "OS":
+      state.deviceMetric = "os";
+      getDevice();
+      break;
+  }
+};
+
 onMounted(() => {
   if (route.query.date) {
     state.dataParams.period = "custom";
@@ -340,6 +390,8 @@ onMounted(() => {
   getData();
   getChart();
   getLocation();
+  getDevice();
+  getTopPage();
 });
 
 // watch route query
@@ -381,6 +433,8 @@ watch(
     getData();
     getChart();
     getLocation();
+    getDevice();
+    getTopPage();
   }
 );
 </script>
@@ -400,38 +454,75 @@ watch(
           </apexchart>
         </template>
         <template v-else>
-          <div class="h-full w-full flex items-center justify-center">
+          <div class="h-full w-full min-h-[450px] flex items-center justify-center">
             <img src="/src/assets/loading.svg" alt="loading" class="w-20 h-20"/>
           </div>
         </template>
       </Card>
 
-      <div class="flex gap-5 mt-5">
-        <Card class="w-full">
+      <div class="flex gap-5 mt-5 lg:flex-row flex-col">
+        <Card class="w-full min-h-[500px]">
           <Tab title="Top Pages" :tabs="state.visitorTabs">
             <template #All>
-              <TopBar :column="state.keyVisitor" :data="state.dataVisitor" />
+              <template v-if="state.isLoading.topPage">
+                <div class="h-full w-full flex items-center justify-center">
+                  <img src="/src/assets/loading.svg" alt="loading" class="w-20 h-20"/>
+                </div>
+              </template>
+              <TopBar v-else :column="state.topPage.keyPage" :data="state.topPage.data" />
+
+              <!-- No Data -->
+              <template v-if="state.topPage.data.length === 0">
+                <div class="min-h-[400px] flex items-center justify-center">
+                  <p class="text-gray-500">No data available</p>
+                </div>
+              </template>
             </template>
           </Tab>
         </Card>
-        <Card class="w-full">
-          <Tab title="Devices" :tabs="state.deviceTabs">
-            <template #All>
-              <TopBar :column="state.keyDevices" :data="state.dataDevices" />
+        <Card class="w-full min-h-[500px]">
+          <Tab title="Devices" :tabs="['Browser', 'OS']" @changeTab="handleChangeDeviceTab">
+            <template #Browser>
+              <template v-if="state.isLoading.device">
+                <div class="h-full w-full flex items-center justify-center">
+                  <img src="/src/assets/loading.svg" alt="loading" class="w-20 h-20"/>
+                </div>
+              </template>
+              <TopBar v-else :column="state.device.keyBrowser" :data="state.device.data" />
+
+              <!-- No Data -->
+              <template v-if="state.device.data.length === 0">
+                <div class="min-h-[400px] flex items-center justify-center">
+                  <p class="text-gray-500">No data available</p>
+                </div>
+              </template>
+            </template>
+            <template #OS>
+              <template v-if="state.isLoading.device">
+                <div class="h-full w-full flex items-center justify-center">
+                  <img src="/src/assets/loading.svg" alt="loading" class="w-20 h-20"/>
+                </div>
+              </template>
+              <TopBar v-else :column="state.device.keyOS" :data="state.device.data" />
             </template>
           </Tab>
         </Card>
       </div>
       
-      <div class="flex gap-5 mt-5">
-        <Card class="w-full">
+      <div class="flex gap-5 mt-5 lg:flex-row flex-col">
+        <Card class="w-full min-h-[500px]">
           <Tab title="Location" :tabs="['Map']">
             <template #Map>
-              <GeoVisitor v-if="state.geoLocation.length  > 0" :data="state.geoLocation" />
+              <template v-if="state.isLoading.location">
+                <div class="h-full w-full flex items-center justify-center">
+                  <img src="/src/assets/loading.svg" alt="loading" class="w-20 h-20"/>
+                </div>
+              </template>
+              <GeoVisitor v-else :data="state.geoLocation || [{name: 'Indonesia', value: '0'}]" />
             </template>
           </Tab>
         </Card>
-        <Card class="w-full">
+        <Card class="w-full min-h-[500px]">
           <Tab title="Location" :tabs="['Countries','Regions','Cities']" @changeTab="handleChangeLocationTab">
             <template #Countries>
               <template v-if="state.isLoading.location">
@@ -440,6 +531,13 @@ watch(
                 </div>
               </template>
               <TopBar v-else :column="state.location.keyCountry" :data="state.location.data" />
+
+              <!-- No Data -->
+              <template v-if="state.location.data.length === 0">
+                <div class="min-h-[400px] flex items-center justify-center">
+                  <p class="text-gray-500">No data available</p>
+                </div>
+              </template>
             </template>
 
             <template #Regions>
@@ -449,6 +547,13 @@ watch(
                 </div>
               </template>
               <TopBar v-else :column="state.location.keyRegion" :data="state.location.data" />
+
+              <!-- No Data -->
+              <template v-if="state.location.data.length === 0">
+                <div class="min-h-[400px] flex items-center justify-center">
+                  <p class="text-gray-500">No data available</p>
+                </div>
+              </template>
             </template>
 
             <template #Cities>
@@ -458,6 +563,13 @@ watch(
                 </div>
               </template>
               <TopBar v-else :column="state.location.keyCity" :data="state.location.data" />
+
+              <!-- No Data -->
+              <template v-if="state.location.data.length === 0">
+                <div class="min-h-[400px] flex items-center justify-center">
+                  <p class="text-gray-500">No data available</p>
+                </div>
+              </template>
             </template>
           </Tab>
         </Card>
