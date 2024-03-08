@@ -73,7 +73,7 @@ watch(filter, (value) => {
     }
 
     if (value == 'compare') {
-        return router.push({ query: { ...route.query, comparison: comparison.value } });
+        return router.push({ query: { ...route.query, comparison: comparison.value, from: date.value[0].toISOString().split("T")[0], to: date.value[1].toISOString().split("T")[0] } });
     }
 
     router.push({ query: { period: value } });

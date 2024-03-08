@@ -9,3 +9,11 @@ import Header from '../components/layouts/Header.vue'
         <slot />
     </main>
 </template>
+
+<style>
+
+.container {
+    max-width: 1200px;
+}
+
+</style>
